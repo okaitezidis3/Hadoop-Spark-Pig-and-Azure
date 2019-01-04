@@ -1,0 +1,8 @@
+bigrams = LOAD '$INPUT' AS (bigram:chararray, year:int, occurrences:int, books:int);
+filt_bigrams = Filter bigrams By occurrences>=300 And books>=12;
+groupby = Group filt_bigrams By bigram;
+ngram_avg = foreach groupby Generate group As bigram,((double)SUM(filt_bigrams.occurrences) / (double)SUM(filt_bigrams.books)) as ngram_count:double;
+output_ = Order ngram_avg By ngram_count Desc, bigram Asc;
+output_ = Limit output_ 15;
+
+STORE output_ INTO '$OUTPUT' USING PigStorage('\t');
